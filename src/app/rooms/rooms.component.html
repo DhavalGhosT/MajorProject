@@ -1,4 +1,15 @@
 <div><button (click)="signOut()">Sign Out</button></div>
 <p>rooms works!</p>
-<input type="text" [(ngModel)]="roomName" (keyup.enter)="createRoom()">
-
+<input type="text" [(ngModel)]="roomName" (keyup.enter)="createRoom()" />
+<div class="room-list">
+  <ul>
+    <li
+      *ngFor="let room of rooms | async"
+      [routerLink]="['/room', room.id]"
+      (click)="joinRoom(room.id)"
+    >
+      {{ room.hostName }}
+      {{ room.name }}
+    </li>
+  </ul>
+</div>

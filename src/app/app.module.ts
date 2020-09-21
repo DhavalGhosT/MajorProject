@@ -11,9 +11,10 @@ import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { RoomsComponent } from './rooms/rooms.component';
 import { FormsModule } from '@angular/forms';
+import { RoomComponent } from './room/room.component';
 
 @NgModule({
-  declarations: [AppComponent, LoginComponent, RoomsComponent],
+  declarations: [AppComponent, LoginComponent, RoomsComponent, RoomComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,

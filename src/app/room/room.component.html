@@ -1,0 +1,8 @@
+<p>room works!</p>
+<div class="participants">
+  <ul>
+    <li *ngFor="let participant of participants | async">
+      {{ participant.name }}
+    </li>
+  </ul>
+</div>
