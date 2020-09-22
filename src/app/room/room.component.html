@@ -5,4 +5,11 @@
       {{ participant.name }}
     </li>
   </ul>
+  <button id="btnStartVideo" (click)="startVideo()">Start Video</button>
+  <button id="btnSnap" (click)="stopVideo()">Stop Video</button>
+  <div>
+      <video #video width="400" height="300"  playsinline autoplay></video>
+      <canvas width="400" height="300" ></canvas>
+  </div>
+  
 </div>
