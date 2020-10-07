@@ -23,11 +23,14 @@ export class RoomComponent implements OnInit {
   private currUser;
   private mediaoptions;
   private stream;
+  public status;
+  private videoElement: HTMLVideoElement;
   @ViewChild('video') video: ElementRef;
   @ViewChild('canvas') canvas: ElementRef;
   participants: Observable<Participant[]>;
 
   ngOnInit(): void {
+    // Video Options
     this.mediaoptions = { audio: false,video: true};
 
     navigator.mediaDevices.getUserMedia(this.mediaoptions)
@@ -36,12 +39,13 @@ export class RoomComponent implements OnInit {
     })
     .catch(( err )=>{console.log(err)});
 
+    //Loading model
     Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri('assets/api-model'),
       faceapi.nets.faceLandmark68Net.loadFromUri('assets/api-model'),
       faceapi.nets.faceRecognitionNet.loadFromUri('assets/api-model'),
       faceapi.nets.faceExpressionNet.loadFromUri('assets/api-model')
-    ]).then(function (){console.log("Done")})
+    ]).then(function (){console.log("Models Loaded")})
 
     this.roomId = this.route.snapshot.paramMap.get('id');
     console.log(this.roomId);
@@ -57,23 +61,44 @@ export class RoomComponent implements OnInit {
 
   async startVideo(){
     this.video.nativeElement.srcObject = this.stream;
+    var absence_timer = null;
+    var difference;
 
     this.video.nativeElement.addEventListener('play', () => {
       const displaySize = { width: this.video.nativeElement.width, height: this.video.nativeElement.height }
-      faceapi.matchDimensions(this.canvas.nativeElement,displaySize)
-      console.log(displaySize)
-      
+      // faceapi.matchDimensions(this.canvas.nativeElement,displaySize)
+      // console.log(displaySize)
+
       setInterval(async () => {
-        const detections = await faceapi.detectAllFaces(this.video.nativeElement,  new faceapi.TinyFaceDetectorOptions())
-        const resizedDetections = faceapi.resizeResults(detections, displaySize)
-        this.canvas.nativeElement.getContext('2d').clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height)
-        faceapi.draw.drawDetections(this.canvas.nativeElement, resizedDetections)
+        const detections = await faceapi.detectSingleFace(this.video.nativeElement,  new faceapi.TinyFaceDetectorOptions())
         // console.log(detections)
-      }, 1000)
+        // console.log((new faceapi.TinyFaceDetectorOptions()).scoreThreshold,(new faceapi.TinyFaceDetectorOptions()).inputSize)
+        // const resizedDetections = faceapi.resizeResults(detections, displaySize)
+        // this.canvas.nativeElement.getContext('2d').clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height)
+        // faceapi.draw.drawDetections(this.canvas.nativeElement, resizedDetections)
+        // console.log("Face: ",detections.length)
+
+        if(detections == undefined){
+          if(absence_timer == null){
+              absence_timer = new Date().getSeconds()
+          }
+          difference = (new Date()).getSeconds() - absence_timer
+          // console.log("Difference: ", difference)
+          if(difference >= 5){
+              // console.log("Absent: ",difference)
+              this.status = "Absent: "+difference+"s"
+          }
+        }
+        else{
+          absence_timer = null
+          this.status = "Present"
+        }
+      }, 300)
     })
   }
 
   stopVideo(){
+    this.status = ""
     this.video.nativeElement.srcObject = null;
   }
 }
