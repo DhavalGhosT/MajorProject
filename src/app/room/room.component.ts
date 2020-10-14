@@ -71,17 +71,18 @@ export class RoomComponent implements OnInit {
 
     this.video.nativeElement.addEventListener('play', () => {
       const displaySize = { width: this.video.nativeElement.width, height: this.video.nativeElement.height }
-      // faceapi.matchDimensions(this.canvas.nativeElement,displaySize)
+      faceapi.matchDimensions(this.canvas.nativeElement,displaySize)
       // console.log(displaySize)
 
       setInterval(async () => {
         const detections = await faceapi.detectSingleFace(this.video.nativeElement,  new faceapi.TinyFaceDetectorOptions())
-        console.log(detections)
-        // console.log(detections)
+        console.log(this.video.nativeElement);
+        
+        console.log(detections.box)
         // console.log((new faceapi.TinyFaceDetectorOptions()).scoreThreshold,(new faceapi.TinyFaceDetectorOptions()).inputSize)
-        // const resizedDetections = faceapi.resizeResults(detections, displaySize)
-        // this.canvas.nativeElement.getContext('2d').clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height)
-        // faceapi.draw.drawDetections(this.canvas.nativeElement, resizedDetections)
+        const resizedDetections = faceapi.resizeResults(detections, displaySize)
+        this.canvas.nativeElement.getContext('2d').clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height)
+        faceapi.draw.drawDetections(this.canvas.nativeElement, resizedDetections)
         // console.log("Face: ",detections.length)
 
         if(detections == undefined){
