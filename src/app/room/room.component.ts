@@ -1,4 +1,4 @@
-import * as faceapi from 'face-api.js';
+// import * as faceapi from 'face-api.js';
 
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
