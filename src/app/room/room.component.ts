@@ -1,5 +1,5 @@
-// import * as faceapi from 'face-api.js';
-
+import * as faceapi from 'face-api.js';
+import * as tf from '@tensorflow/tfjs'
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
@@ -24,12 +24,15 @@ export class RoomComponent implements OnInit {
   private mediaoptions;
   private stream;
   public status;
+  model: tf.LayersModel;
+  predictions: any;
   private videoElement: HTMLVideoElement;
   @ViewChild('video') video: ElementRef;
   @ViewChild('canvas') canvas: ElementRef;
   participants: Observable<Participant[]>;
 
   ngOnInit(): void {
+    this.loadAttentionDetectionModel()
     // Video Options
     this.mediaoptions = { audio: false,video: true};
 
@@ -46,6 +49,8 @@ export class RoomComponent implements OnInit {
       faceapi.nets.faceRecognitionNet.loadFromUri('assets/api-model'),
       faceapi.nets.faceExpressionNet.loadFromUri('assets/api-model')
     ]).then(function (){console.log("Models Loaded")})
+
+    
 
     this.roomId = this.route.snapshot.paramMap.get('id');
     console.log(this.roomId);
@@ -71,6 +76,7 @@ export class RoomComponent implements OnInit {
 
       setInterval(async () => {
         const detections = await faceapi.detectSingleFace(this.video.nativeElement,  new faceapi.TinyFaceDetectorOptions())
+        console.log(detections)
         // console.log(detections)
         // console.log((new faceapi.TinyFaceDetectorOptions()).scoreThreshold,(new faceapi.TinyFaceDetectorOptions()).inputSize)
         // const resizedDetections = faceapi.resizeResults(detections, displaySize)
@@ -100,5 +106,13 @@ export class RoomComponent implements OnInit {
   stopVideo(){
     this.status = ""
     this.video.nativeElement.srcObject = null;
+  }
+
+  async loadAttentionDetectionModel() {
+    console.log('Loading Attention Detection Model');
+    
+    this.model = await tf.loadLayersModel('/assets/model.json')
+    console.log(this.model.summary());
+    
   }
 }
