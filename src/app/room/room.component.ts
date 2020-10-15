@@ -82,6 +82,7 @@ export class RoomComponent implements OnInit {
         // console.log((new faceapi.TinyFaceDetectorOptions()).scoreThreshold,(new faceapi.TinyFaceDetectorOptions()).inputSize)
         const resizedDetections = faceapi.resizeResults(detections, displaySize)
         this.canvas.nativeElement.getContext('2d').clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height)
+        // this.canvas.nativeElement.getContext('2d').drawImage(this.video.nativeElement, detections.box.x, detections.box.y, detections.box.width, detections.box.height, 0, 0, detections.box.width, detections.box.height )
         faceapi.draw.drawDetections(this.canvas.nativeElement, resizedDetections)
         // console.log("Face: ",detections.length)
 
@@ -99,6 +100,10 @@ export class RoomComponent implements OnInit {
         else{
           absence_timer = null
           this.status = "Present"
+
+          var image = new Image()
+          // image = tf.FromPixels()
+          // this.model.predict(image)
         }
       }, 300)
     })
