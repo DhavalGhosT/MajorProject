@@ -1,5 +1,5 @@
 import * as faceapi from 'face-api.js';
-import * as tf from '@tensorflow/tfjs'
+import * as tf from '@tensorflow/tfjs';
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
@@ -16,7 +16,7 @@ export class RoomComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private afs: AngularFirestore,
-    private loginService: LoginService,
+    private loginService: LoginService
   ) {}
 
   private roomId;
@@ -29,28 +29,34 @@ export class RoomComponent implements OnInit {
   private videoElement: HTMLVideoElement;
   @ViewChild('video') video: ElementRef;
   @ViewChild('canvas') canvas: ElementRef;
+  @ViewChild('c') c: ElementRef;
+  @ViewChild('can') can: ElementRef;
+  img: string;
   participants: Observable<Participant[]>;
 
   ngOnInit(): void {
-    this.loadAttentionDetectionModel()
+    this.loadAttentionDetectionModel();
     // Video Options
-    this.mediaoptions = { audio: false,video: true};
+    this.mediaoptions = { audio: false, video: true };
 
-    navigator.mediaDevices.getUserMedia(this.mediaoptions)
-    .then(( stream )=>{
+    navigator.mediaDevices
+      .getUserMedia(this.mediaoptions)
+      .then((stream) => {
         this.stream = stream;
-    })
-    .catch(( err )=>{console.log(err)});
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 
     //Loading model
     Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri('assets/api-model'),
       faceapi.nets.faceLandmark68Net.loadFromUri('assets/api-model'),
       faceapi.nets.faceRecognitionNet.loadFromUri('assets/api-model'),
-      faceapi.nets.faceExpressionNet.loadFromUri('assets/api-model')
-    ]).then(function (){console.log("Models Loaded")})
-
-    
+      faceapi.nets.faceExpressionNet.loadFromUri('assets/api-model'),
+    ]).then(function () {
+      console.log('Models Loaded');
+    });
 
     this.roomId = this.route.snapshot.paramMap.get('id');
     console.log(this.roomId);
@@ -64,61 +70,117 @@ export class RoomComponent implements OnInit {
       .valueChanges();
   }
 
-  async startVideo(){
+  async startVideo() {
     this.video.nativeElement.srcObject = this.stream;
     var absence_timer = null;
     var difference;
 
     this.video.nativeElement.addEventListener('play', () => {
-      const displaySize = { width: this.video.nativeElement.width, height: this.video.nativeElement.height }
-      faceapi.matchDimensions(this.canvas.nativeElement,displaySize)
+      const displaySize = {
+        width: this.video.nativeElement.width,
+        height: this.video.nativeElement.height,
+      };
+      faceapi.matchDimensions(this.canvas.nativeElement, displaySize);
       // console.log(displaySize)
 
       setInterval(async () => {
-        const detections = await faceapi.detectSingleFace(this.video.nativeElement,  new faceapi.TinyFaceDetectorOptions())
+        const detections = await faceapi.detectSingleFace(
+          this.video.nativeElement,
+          new faceapi.TinyFaceDetectorOptions()
+        );
         console.log(this.video.nativeElement);
-        
-        console.log(detections.box)
+
         // console.log((new faceapi.TinyFaceDetectorOptions()).scoreThreshold,(new faceapi.TinyFaceDetectorOptions()).inputSize)
-        const resizedDetections = faceapi.resizeResults(detections, displaySize)
-        this.canvas.nativeElement.getContext('2d').clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height)
-        // this.canvas.nativeElement.getContext('2d').drawImage(this.video.nativeElement, detections.box.x, detections.box.y, detections.box.width, detections.box.height, 0, 0, detections.box.width, detections.box.height )
-        faceapi.draw.drawDetections(this.canvas.nativeElement, resizedDetections)
+
         // console.log("Face: ",detections.length)
 
-        if(detections == undefined){
-          if(absence_timer == null){
-              absence_timer = new Date().getSeconds()
+        if (detections == undefined) {
+          if (absence_timer == null) {
+            absence_timer = new Date().getSeconds();
           }
-          difference = (new Date()).getSeconds() - absence_timer
+          difference = new Date().getSeconds() - absence_timer;
           // console.log("Difference: ", difference)
-          if(difference >= 5){
-              // console.log("Absent: ",difference)
-              this.status = "Absent: "+difference+"s"
+          if (difference >= 5) {
+            // console.log("Absent: ",difference)
+            this.status = 'Absent: ' + difference + 's';
           }
-        }
-        else{
-          absence_timer = null
-          this.status = "Present"
+        } else {
+          absence_timer = null;
+          this.status = 'Present';
+          console.log(detections.box);
+          const box = detections.box;
+          this.c.nativeElement.height = box.height;
+          this.c.nativeElement.width = box.width;
+          const context = this.can.nativeElement.getContext('2d');
 
-          var image = new Image()
-          // image = tf.FromPixels()
-          // this.model.predict(image)
+          const resizedDetections = faceapi.resizeResults(
+            detections,
+            displaySize
+          );
+          this.canvas.nativeElement
+            .getContext('2d')
+            .clearRect(
+              0,
+              0,
+              this.canvas.nativeElement.width,
+              this.canvas.nativeElement.height
+            );
+          faceapi.draw.drawDetections(
+            this.canvas.nativeElement,
+            resizedDetections
+          );
+
+          this.c.nativeElement
+            .getContext('2d')
+            .drawImage(
+              this.video.nativeElement,
+              box.x,
+              box.y,
+              box.width,
+              box.height,
+              0,
+              0,
+              box.width,
+              box.height
+            );
+          context.drawImage(this.c.nativeElement, 0, 0, 150, 150);
+
+          const imgData = context.getImageData(0, 0, 150, 150);
+          const image = tf.browser
+            .fromPixels(imgData)
+            .mean(2)
+            .toFloat()
+            .expandDims(0)
+            .expandDims(-1);
+          console.log(image);
+          this.predict(imgData);
         }
-      }, 300)
-    })
+      }, 300);
+    });
   }
 
-  stopVideo(){
-    this.status = ""
+  stopVideo() {
+    this.status = '';
     this.video.nativeElement.srcObject = null;
   }
 
   async loadAttentionDetectionModel() {
     console.log('Loading Attention Detection Model');
-    
-    this.model = await tf.loadLayersModel('/assets/model.json')
+    this.model = await tf.loadLayersModel('/assets/model.json');
     console.log(this.model.summary());
-    
+  }
+
+  async predict(imageData: ImageData) {
+    const pred = await tf.tidy(() => {
+      const face = tf.browser
+        .fromPixels(imageData)
+        .mean(2)
+        .toFloat()
+        .expandDims(0)
+        .expandDims(-1);
+      console.log(face);
+      const output = this.model.predict(face) as any;
+      console.log(output);
+    });
   }
 }
