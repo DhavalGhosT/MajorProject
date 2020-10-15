@@ -1,5 +1,4 @@
-
-<p>room works!</p>
+<p>room works! {{ output[0] }} {{ output[1] }}</p>
 <div class="participants">
   <ul>
     <li *ngFor="let participant of participants | async">
@@ -14,11 +13,14 @@
   </div> -->
   <p>{{ status }}</p>
   <div class="video-container">
-    <video #video  width="400" height="300"  autoplay muted ></video>
-    <canvas #canvas ></canvas>
+    <video #video width="400" height="300" autoplay muted></video>
+    <canvas #canvas></canvas>
   </div>
   <div>
     <canvas #c id="c"></canvas>
     <canvas #can id="can"></canvas>
+  </div>
+  <div>
+    {{ output }}
   </div>
 </div>

@@ -25,7 +25,15 @@ export class RoomComponent implements OnInit {
   private stream;
   public status;
   model: tf.LayersModel;
-  predictions: any;
+  predictions: Array<number>;
+  predMap = {
+    0: 'attentive',
+    1: 'highly_attentive',
+    2: 'least_attentive',
+    3: 'less_attentive',
+    4: 'not_attentive',
+  };
+  output: Array<any>[2] = [0, 0];
   private videoElement: HTMLVideoElement;
   @ViewChild('video') video: ElementRef;
   @ViewChild('canvas') canvas: ElementRef;
@@ -35,6 +43,8 @@ export class RoomComponent implements OnInit {
   participants: Observable<Participant[]>;
 
   ngOnInit(): void {
+    console.log(this.predMap[0], this.output);
+
     this.loadAttentionDetectionModel();
     // Video Options
     this.mediaoptions = { audio: false, video: true };
@@ -180,7 +190,24 @@ export class RoomComponent implements OnInit {
         .expandDims(-1);
       console.log(face);
       const output = this.model.predict(face) as any;
-      console.log(output);
+      this.predictions = Array.from(output.dataSync());
+      this.indexOfMaxPrediction();
     });
+  }
+
+  indexOfMaxPrediction() {
+    if (this.predictions) {
+      let max = this.predictions[0];
+      let index = 0;
+      for (let i = 1; i < this.predictions.length; i++) {
+        if (this.predictions[i] > max) {
+          index = i;
+          max = this.predictions[i];
+        }
+      }
+      this.output[0] = this.predMap[index];
+      this.output[1] = this.predictions[index];
+      console.log(this.output);
+    }
   }
 }
