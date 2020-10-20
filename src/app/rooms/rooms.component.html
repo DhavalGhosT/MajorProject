@@ -1,15 +1,42 @@
 <div><button (click)="signOut()">Sign Out</button></div>
 <p>rooms works!</p>
-<input type="text" [(ngModel)]="roomName" (keyup.enter)="createRoom()" />
+<div class="create-room">
+  <input
+    #name
+    placeholder="Name of Meeting Room"
+    type="text"
+    [(ngModel)]="roomName"
+    (keyup.enter)="createRoom()"
+  />
+  <input
+    #pass
+    placeholder="Password of Meeting Room"
+    type="password"
+    [(ngModel)]="roomPass"
+    (keyup.enter)="createRoom()"
+  />
+  <button #create (keyup.enter)="createRoom()" (click)="createRoom()">
+    Create!
+  </button>
+</div>
+
 <div class="room-list">
   <ul>
-    <li
-      *ngFor="let room of rooms | async"
-      [routerLink]="['/room', room.id]"
-      (click)="joinRoom(room.id)"
-    >
-      {{ room.hostName }}
-      {{ room.name }}
+    <li *ngFor="let room of rooms | async" (click)="tryJoin($event, room)">
+      <div class="room">
+        <div class="room-name">
+          {{ room.hostName }}
+          {{ room.name }}
+        </div>
+        <input
+          type="password"
+          [(ngModel)]="currRoomPass"
+          placeholder="Password"
+          *ngIf="currRoom?.id == room.id"
+          (keyup.enter)="joinRoom(room)"
+        />
+      </div>
     </li>
   </ul>
 </div>
+<!-- [routerLink]="['/room', room.id]" -->

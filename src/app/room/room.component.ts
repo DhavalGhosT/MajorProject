@@ -1,10 +1,14 @@
 import * as faceapi from 'face-api.js';
 import * as tf from '@tensorflow/tfjs';
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/firestore';
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+} from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Participant } from '../models/participant';
+import { Room } from '../models/room';
 import { LoginService } from '../services/login.service';
 
 @Component({
@@ -19,11 +23,13 @@ export class RoomComponent implements OnInit {
     private loginService: LoginService
   ) {}
 
-  private roomId;
-  private currUser;
-  private mediaoptions;
-  private stream;
+  private intervalID: NodeJS.Timeout;
+  private roomId: string;
+  private currUser: any;
+  private mediaoptions = { audio: false, video: true };
+  private stream: MediaStream;
   public status;
+  delay = 1000;
   model: tf.LayersModel;
   predictions: Array<number>;
   predMap = {
@@ -41,13 +47,13 @@ export class RoomComponent implements OnInit {
   @ViewChild('can') can: ElementRef;
   img: string;
   participants: Observable<Participant[]>;
+  roomCollection: AngularFirestoreCollection;
+  room: Observable<Room>;
 
   ngOnInit(): void {
     console.log(this.predMap[0], this.output);
-
     this.loadAttentionDetectionModel();
     // Video Options
-    this.mediaoptions = { audio: false, video: true };
 
     navigator.mediaDevices
       .getUserMedia(this.mediaoptions)
@@ -70,17 +76,28 @@ export class RoomComponent implements OnInit {
 
     this.roomId = this.route.snapshot.paramMap.get('id');
     console.log(this.roomId);
-    this.loginService
-      .getLoggedInUser()
-      .subscribe((user) => (this.currUser = user));
-    this.participants = this.afs
-      .collection('rooms')
-      .doc(this.roomId)
-      .collection('users')
-      .valueChanges();
+    this.loginService.getLoggedInUser().subscribe((user) => {
+      this.currUser = user;
+      this.roomCollection = this.afs
+        .collection('rooms')
+        .doc(this.roomId)
+        .collection('users')
+        .doc(this.currUser.uid)
+        .collection('attentionData');
+
+      this.participants = this.afs
+        .collection('rooms')
+        .doc(this.roomId)
+        .collection('users')
+        .valueChanges();
+
+      this.room = this.afs.collection('rooms').doc(this.roomId).valueChanges();
+    });
   }
 
   async startVideo() {
+    console.log('StartVideo: delay = ', this.delay);
+
     this.video.nativeElement.srcObject = this.stream;
     var absence_timer = null;
     var difference;
@@ -93,7 +110,7 @@ export class RoomComponent implements OnInit {
       faceapi.matchDimensions(this.canvas.nativeElement, displaySize);
       // console.log(displaySize)
 
-      setInterval(async () => {
+      this.intervalID = setInterval(async () => {
         const detections = await faceapi.detectSingleFace(
           this.video.nativeElement,
           new faceapi.TinyFaceDetectorOptions()
@@ -113,6 +130,11 @@ export class RoomComponent implements OnInit {
           if (difference >= 5) {
             // console.log("Absent: ",difference)
             this.status = 'Absent: ' + difference + 's';
+            this.roomCollection.add({
+              type: 4,
+              prob: 1.0,
+              timestamp: Date.now(),
+            });
           }
         } else {
           absence_timer = null;
@@ -164,14 +186,23 @@ export class RoomComponent implements OnInit {
             .expandDims(-1);
           console.log(image);
           this.predict(imgData);
+          this.roomCollection.add({
+            type: this.output[0],
+            prob: this.output[1],
+            timestamp: Date.now(),
+          });
         }
-      }, 300);
+        console.log('Delay- ', this.delay);
+      }, this.delay);
     });
+    console.log('StartVideo: ended with delay = ', this.delay);
   }
 
   stopVideo() {
     this.status = '';
     this.video.nativeElement.srcObject = null;
+    clearInterval(this.intervalID);
+    this.delay = 1000;
   }
 
   async loadAttentionDetectionModel() {
@@ -205,7 +236,7 @@ export class RoomComponent implements OnInit {
           max = this.predictions[i];
         }
       }
-      this.output[0] = this.predMap[index];
+      this.output[0] = index;
       this.output[1] = this.predictions[index];
       console.log(this.output);
     }

@@ -27,3 +27,41 @@ canvas {
   height: 150;
   width: 150;
 }
+
+.room {
+  display: grid;
+  height: 100vh;
+  grid-template-columns: 1fr 360px;
+  grid-template-rows: 90px 1fr;
+  grid-template-areas:
+    "room-name tab"
+    "video-container users";
+}
+
+.video {
+  grid-area: video-container;
+  height: 100%;
+  width: 100%;
+}
+
+.video p {
+  position: absolute;
+  bottom: 0;
+}
+
+.room-info {
+  grid-area: room-name;
+}
+
+.room-info li {
+  display: inline;
+  padding-right: 1rem;
+}
+
+.users {
+  grid-area: users;
+}
+
+ul {
+  list-style-type: none;
+}

@@ -1,6 +1,7 @@
 export class Room {
-  id?: String;
-  hostName?: String;
-  name?: String;
+  id?: string;
+  hostName?: string;
+  name?: string;
   timestamp?: Number;
+  hash?: string;
 }

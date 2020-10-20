@@ -1,26 +1,37 @@
-<p>room works! {{ output[0] }} {{ output[1] }}</p>
-<div class="participants">
-  <ul>
-    <li *ngFor="let participant of participants | async">
-      {{ participant.name }}
-    </li>
-  </ul>
-  <button id="btnStartVideo" (click)="startVideo()">Start Video</button>
-  <button id="btnSnap" (click)="stopVideo()">Stop Video</button>
+<div>
   <!-- <div>
       <video #video width="400" height="300"  playsinline autoplay></video>
       <canvas #canvas></canvas>
   </div> -->
-  <p>{{ status }}</p>
-  <div class="video-container">
-    <video #video width="400" height="300" autoplay muted></video>
-    <canvas #canvas></canvas>
+</div>
+
+<div class="room">
+  <div class="room-info">
+    <ul>
+      <li class="room-name">{{ (room | async)?.name }}</li>
+      <li class="room-host">Hosted by, {{ (room | async)?.hostName }}</li>
+    </ul>
   </div>
-  <div>
-    <canvas #c id="c"></canvas>
-    <canvas #can id="can"></canvas>
+
+  <div class="users">
+    <ul>
+      <li *ngFor="let participant of participants | async">
+        {{ participant.name }}
+      </li>
+    </ul>
   </div>
-  <div>
-    {{ output }}
+
+  <div class="video">
+    <button id="btnStartVideo" (click)="startVideo()">Start Video</button>
+    <button id="btnSnap" (click)="stopVideo()">Stop Video</button>
+    <div class="video-container">
+      <video #video width="400" height="300" autoplay muted></video>
+      <canvas #canvas></canvas>
+    </div>
+    <div>
+      <canvas #c id="c"></canvas>
+      <canvas #can id="can"></canvas>
+    </div>
+    <p>{{ predMap[output[0]] }} {{ output[1] }}</p>
   </div>
 </div>
