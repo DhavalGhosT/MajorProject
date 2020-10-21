@@ -4,6 +4,7 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import {
   AngularFirestore,
   AngularFirestoreCollection,
+  AngularFirestoreDocument,
 } from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -46,6 +47,7 @@ export class RoomComponent implements OnInit {
   @ViewChild('c') c: ElementRef;
   @ViewChild('can') can: ElementRef;
   img: string;
+  currPart: Observable<Participant>;
   participants: Observable<Participant[]>;
   roomCollection: AngularFirestoreCollection;
   room: Observable<Room>;
@@ -89,6 +91,13 @@ export class RoomComponent implements OnInit {
         .collection('rooms')
         .doc(this.roomId)
         .collection('users')
+        .valueChanges();
+
+      this.currPart = this.afs
+        .collection('rooms')
+        .doc(this.roomId)
+        .collection('users')
+        .doc(user.uid)
         .valueChanges();
 
       this.room = this.afs.collection('rooms').doc(this.roomId).valueChanges();

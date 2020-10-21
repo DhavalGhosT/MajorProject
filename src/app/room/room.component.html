@@ -16,12 +16,23 @@
   <div class="users">
     <ul>
       <li *ngFor="let participant of participants | async">
-        {{ participant.name }}
+        <div class="pname">
+          {{ participant.name }}
+        </div>
+        <div
+          class="patt"
+          *ngIf="
+            (currPart | async)?.type == 'host' &&
+            participant.type == 'participant'
+          "
+        >
+          <p>{{ predMap[participant.attentionType] }} {{ participant.prob }}</p>
+        </div>
       </li>
     </ul>
   </div>
 
-  <div class="video">
+  <div class="video" *ngIf="(currPart | async)?.type != 'host'">
     <button id="btnStartVideo" (click)="startVideo()">Start Video</button>
     <button id="btnSnap" (click)="stopVideo()">Stop Video</button>
     <div class="video-container">
