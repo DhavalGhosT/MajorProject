@@ -76,7 +76,8 @@ export class RoomComponent implements OnInit {
 
     this.roomId = this.route.snapshot.paramMap.get('id');
     console.log(this.roomId);
-    this.dataService.user.subscribe((user) => {
+    // this.dataService.user.subscribe((user) => {
+    this.loginService.getLoggedInUser().subscribe((user) => {
       this.currUser = user;
       this.roomCollection = this.afs
         .collection('rooms')
@@ -138,11 +139,11 @@ export class RoomComponent implements OnInit {
             // console.log("Absent: ",difference)
             this.status = 'Absent: ' + difference + 's';
           }
-          /*this.roomCollection.add({
+          this.roomCollection.add({
             type: 4,
             prob: 1.0,
             timestamp: Date.now(),
-          });*/
+          });
         } else {
           absence_timer = null;
           this.status = 'Present';
@@ -193,11 +194,11 @@ export class RoomComponent implements OnInit {
           //   .expandDims(-1);
           // console.log(image);
           this.predict(imgData);
-          /*this.roomCollection.add({
+          this.roomCollection.add({
             type: this.output[0],
             prob: this.output[1],
             timestamp: Date.now(),
-          });*/
+          });
         }
         console.log('Delay- ', this.delay);
       }, this.delay);

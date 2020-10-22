@@ -7,18 +7,22 @@
 
 <div class="room">
   <div class="room-info">
-    <ul>
-      <li class="room-name">{{ (room | async)?.name }}</li>
-      <li class="room-host">Hosted by, {{ (room | async)?.hostName }}</li>
-    </ul>
+    <div class="logo">Attention Detection Testing.</div>
+    <div class="info">
+      <div class="room-name">{{ (room | async)?.name }}</div>
+      <div class="room-host">Hosted by, {{ (room | async)?.hostName }}</div>
+    </div>
   </div>
-
+  <div class="tab">Participants</div>
   <div class="users">
     <ul>
       <li *ngFor="let participant of participants | async">
         <div class="pname">
           {{ participant.name }}
         </div>
+        <span class="patt" *ngIf="participant.type == 'host'">{{
+          participant.type | titlecase
+        }}</span>
         <div
           class="patt"
           *ngIf="
@@ -26,7 +30,14 @@
             participant.type == 'participant'
           "
         >
-          <p>{{ predMap[participant.attentionType] }} {{ participant.prob }}</p>
+          <span
+            ><b><u>Type:</u></b>
+            {{ " " + predMap[participant.attentionType] }}</span
+          >
+          <span
+            ><b><u>Probability:</u></b>
+            {{ " " + participant.prob | number: "1.2-4" }}</span
+          >
         </div>
       </li>
     </ul>
