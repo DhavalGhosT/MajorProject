@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FirebaseApp } from '@angular/fire';
 import { Router } from '@angular/router';
+import { DataService } from '../services/data.service';
 import { LoginService } from '../services/login.service';
 
 @Component({
@@ -9,7 +10,11 @@ import { LoginService } from '../services/login.service';
   styleUrls: ['./login.component.css'],
 })
 export class LoginComponent implements OnInit {
-  constructor(private loginService: LoginService, private router: Router) {}
+  constructor(
+    private dataService: DataService,
+    private loginService: LoginService,
+    private router: Router
+  ) {}
 
   currUser: firebase.User;
 
@@ -17,6 +22,8 @@ export class LoginComponent implements OnInit {
     this.loginService.getLoggedInUser().subscribe((user) => {
       if (user) {
         this.currUser = user;
+        console.log('LoginComponent, ', user.displayName);
+        this.dataService.changeUser(user);
         this.router.navigate(['/rooms']);
         console.log(user.displayName);
       } else {

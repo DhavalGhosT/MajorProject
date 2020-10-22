@@ -3,13 +3,13 @@ import { Room } from '../models/room';
 import { LoginService } from '../services/login.service';
 import {
   AngularFirestore,
-  AngularFirestoreDocument,
   AngularFirestoreCollection,
 } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Participant } from '../models/participant';
 import { sha256 } from 'crypto-hash';
+import { DataService } from '../services/data.service';
 
 @Component({
   selector: 'app-rooms',
@@ -17,28 +17,30 @@ import { sha256 } from 'crypto-hash';
   styleUrls: ['./rooms.component.css'],
 })
 export class RoomsComponent implements OnInit {
-  constructor(
-    private loginService: LoginService,
-    private afs: AngularFirestore,
-    private router: Router
-  ) {}
-
   roomName: string;
   roomPass: string;
   currRoomPass: string;
-  private currUser: firebase.User;
+  currUser: firebase.User;
   private roomsCollection: AngularFirestoreCollection;
   rooms: Observable<Room[]>;
   currRoom: Room;
   @ViewChild('name') nameInput;
   @ViewChild('pass') passInput;
   @ViewChild('create') createBtn;
+
+  constructor(
+    private dataService: DataService,
+    private loginService: LoginService,
+    private afs: AngularFirestore,
+    private router: Router
+  ) {}
+
   ngOnInit(): void {
     console.log(this.nameInput);
-
-    this.loginService
-      .getLoggedInUser()
-      .subscribe((user) => (this.currUser = user));
+    this.dataService.user.subscribe((user) => {
+      if (user) this.currUser = user;
+      else this.router.navigate(['/login']);
+    });
     this.rooms = this.afs.collection('rooms').valueChanges();
     this.roomsCollection = this.afs.collection('rooms');
   }

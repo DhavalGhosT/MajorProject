@@ -1,0 +1,179 @@
+.rooms-main {
+  height: 100vh;
+  display: grid;
+  background-color: #fffef2;
+  grid-template-columns: 0.5fr 1fr 0.5fr;
+  grid-template-rows: 80px 300px 1fr;
+  grid-template-areas:
+    "nav nav nav"
+    ". create ."
+    ". list .";
+}
+
+.nav {
+  grid-area: nav;
+  display: flex;
+  justify-content: space-between;
+  background-color: #fffabd;
+  box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.nav .logo {
+  width: 440px;
+  font-family: "Montserrat", sans-serif;
+  font-size: xx-large;
+  color: #d45e0f;
+  font-weight: 500;
+  margin-left: 40px;
+}
+
+.nav section {
+  display: flex;
+  justify-content: space-around;
+}
+
+.nav .name {
+  display: grid;
+  place-items: center;
+  font-family: "Montserrat", sans-serif;
+  margin-right: 1em;
+  font-size: x-large;
+  color: #d45e0f;
+}
+
+.nav .logout {
+  margin-right: 40px;
+  display: grid;
+  place-items: center;
+}
+
+.btn {
+  font-family: "Montserrat", sans-serif;
+  cursor: pointer;
+  background-color: #ff6700;
+  color: #fffabd;
+  padding: 6px;
+  font-size: 20px;
+  border-radius: 5px;
+  font-weight: 500;
+  border: 2px solid #ff6700;
+  transition: background-color 300ms ease-in, color 300ms;
+}
+
+.btn:hover {
+  background-color: #fffabd;
+  color: #ff6700;
+}
+
+.create-room {
+  grid-area: create;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.create-room .head {
+  font-family: "Montserrat", sans-serif;
+  font-size: x-large;
+  color: #ff6700;
+  font-weight: 500;
+  margin-top: 1.5em;
+  text-align: center;
+}
+
+.create-room input {
+  background: transparent;
+  outline: none;
+  border: none;
+  border-bottom: 1px ridge #fce903;
+  width: 60%;
+  margin: 0.5em 0 0.5em 0;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  color: #4285f4;
+  transition: font-size 250ms, border 100ms, color 250ms, width 250ms;
+}
+.create-room input:focus {
+  color: #ff6700;
+  font-size: 20px;
+  width: 70%;
+  border-bottom: 2px solid #ff6700;
+}
+
+.create-room input:disabled {
+  color: lightgray;
+  font-size: 16px;
+  width: 60%;
+  border-bottom: 1px solid lightgray;
+}
+
+.create-room .create-btn {
+  display: grid;
+  place-items: center;
+}
+
+.room-list {
+  grid-area: list;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: scroll;
+  overflow-x: hidden;
+}
+
+.room-list .head {
+  font-family: "Montserrat", sans-serif;
+  font-size: x-large;
+  color: #ff6700;
+  font-weight: 500;
+  margin-top: 1.5em;
+  text-align: center;
+}
+
+.room-list ul {
+  margin-top: 0.5em;
+  list-style-type: none;
+}
+
+.room-list li {
+  width: 360px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid black;
+}
+
+.room-list li .room-name {
+  display: flex;
+  justify-content: space-between;
+}
+
+.room-list li .room-name .n {
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+}
+
+.room-list li .room-name .h {
+  font-family: "Roboto", sans-serif;
+  font-size: 15px;
+  font-weight: 300;
+}
+
+.room-list li input {
+  font-family: "Roboto", sans-serif;
+  background: transparent;
+  outline: none;
+  border: none;
+  border-bottom: 1px ridge #fffabd;
+  width: 60%;
+  font-size: 21px;
+  color: #4285f4;
+  transition: font-size 250ms, border 100ms, color 250ms, width 250ms;
+}
+
+.room-list li input:focus {
+  color: #ff6700;
+  border-bottom: 1px ridge #ff6700;
+  width: 70%;
+}

@@ -1,32 +1,52 @@
-<div><button (click)="signOut()">Sign Out</button></div>
-<p>rooms works!</p>
-<div class="create-room">
-  <input
-    #name
-    placeholder="Name of Meeting Room"
-    type="text"
-    [(ngModel)]="roomName"
-    (keyup.enter)="createRoom()"
-  />
-  <input
-    #pass
-    placeholder="Password of Meeting Room"
-    type="password"
-    [(ngModel)]="roomPass"
-    (keyup.enter)="createRoom()"
-  />
-  <button #create (keyup.enter)="createRoom()" (click)="createRoom()">
-    Create!
-  </button>
-</div>
+<div class="rooms-main">
+  <nav class="nav">
+    <div class="logo">Attention Detection Testing.</div>
+    <section>
+      <div class="name">{{ currUser?.displayName }}</div>
+      <div class="logout">
+        <a class="btn" (click)="signOut()">Logout</a>
+      </div>
+    </section>
+  </nav>
+  <div class="create-room">
+    <div class="head">Create New Meeting Room!</div>
+    <!-- <label for="name">Name of meeting room</label> -->
+    <input
+      #name
+      id="name"
+      placeholder="Room Name"
+      type="text"
+      [(ngModel)]="roomName"
+      (keyup.enter)="createRoom()"
+    />
+    <!-- <label for="pass">Password for meeting room</label> -->
+    <input
+      #pass
+      id="pass"
+      placeholder="Password"
+      type="password"
+      [(ngModel)]="roomPass"
+      (keyup.enter)="createRoom()"
+    />
+    <div class="create-btn">
+      <button
+        #create
+        (keyup.enter)="createRoom()"
+        (click)="createRoom()"
+        class="btn"
+      >
+        Create!
+      </button>
+    </div>
+  </div>
 
-<div class="room-list">
-  <ul>
-    <li *ngFor="let room of rooms | async" (click)="tryJoin($event, room)">
-      <div class="room">
+  <div class="room-list">
+    <div class="head">Available Rooms!</div>
+    <ul>
+      <li *ngFor="let room of rooms | async" (click)="tryJoin($event, room)">
         <div class="room-name">
-          {{ room.hostName }}
-          {{ room.name }}
+          <span class="n">{{ room.name }}</span>
+          <span class="h">Host: {{ room.hostName }}</span>
         </div>
         <input
           type="password"
@@ -35,8 +55,8 @@
           *ngIf="currRoom?.id == room.id"
           (keyup.enter)="joinRoom(room)"
         />
-      </div>
-    </li>
-  </ul>
+      </li>
+    </ul>
+  </div>
 </div>
 <!-- [routerLink]="['/room', room.id]" -->

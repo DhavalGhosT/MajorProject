@@ -4,13 +4,13 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import {
   AngularFirestore,
   AngularFirestoreCollection,
-  AngularFirestoreDocument,
 } from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Participant } from '../models/participant';
 import { Room } from '../models/room';
 import { LoginService } from '../services/login.service';
+import { DataService } from '../services/data.service';
 
 @Component({
   selector: 'app-room',
@@ -19,6 +19,7 @@ import { LoginService } from '../services/login.service';
 })
 export class RoomComponent implements OnInit {
   constructor(
+    private dataService: DataService,
     private route: ActivatedRoute,
     private afs: AngularFirestore,
     private loginService: LoginService
@@ -69,16 +70,13 @@ export class RoomComponent implements OnInit {
     //Loading model
     Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri('assets/api-model'),
-      faceapi.nets.faceLandmark68Net.loadFromUri('assets/api-model'),
-      faceapi.nets.faceRecognitionNet.loadFromUri('assets/api-model'),
-      faceapi.nets.faceExpressionNet.loadFromUri('assets/api-model'),
     ]).then(function () {
       console.log('Models Loaded');
     });
 
     this.roomId = this.route.snapshot.paramMap.get('id');
     console.log(this.roomId);
-    this.loginService.getLoggedInUser().subscribe((user) => {
+    this.dataService.user.subscribe((user) => {
       this.currUser = user;
       this.roomCollection = this.afs
         .collection('rooms')
@@ -139,12 +137,12 @@ export class RoomComponent implements OnInit {
           if (difference >= 5) {
             // console.log("Absent: ",difference)
             this.status = 'Absent: ' + difference + 's';
-            this.roomCollection.add({
-              type: 4,
-              prob: 1.0,
-              timestamp: Date.now(),
-            });
           }
+          /*this.roomCollection.add({
+            type: 4,
+            prob: 1.0,
+            timestamp: Date.now(),
+          });*/
         } else {
           absence_timer = null;
           this.status = 'Present';
@@ -187,19 +185,19 @@ export class RoomComponent implements OnInit {
           context.drawImage(this.c.nativeElement, 0, 0, 150, 150);
 
           const imgData = context.getImageData(0, 0, 150, 150);
-          const image = tf.browser
-            .fromPixels(imgData)
-            .mean(2)
-            .toFloat()
-            .expandDims(0)
-            .expandDims(-1);
-          console.log(image);
+          // const image = tf.browser
+          //   .fromPixels(imgData)
+          //   .mean(2)
+          //   .toFloat()
+          //   .expandDims(0)
+          //   .expandDims(-1);
+          // console.log(image);
           this.predict(imgData);
-          this.roomCollection.add({
+          /*this.roomCollection.add({
             type: this.output[0],
             prob: this.output[1],
             timestamp: Date.now(),
-          });
+          });*/
         }
         console.log('Delay- ', this.delay);
       }, this.delay);
@@ -231,6 +229,8 @@ export class RoomComponent implements OnInit {
       console.log(face);
       const output = this.model.predict(face) as any;
       this.predictions = Array.from(output.dataSync());
+      console.log('Pred: ', this.predictions);
+
       this.indexOfMaxPrediction();
     });
   }

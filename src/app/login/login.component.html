@@ -1,4 +1,24 @@
-<p>login works!</p>
-<h2>{{ currUser?.displayName }}</h2>
-<button (click)="signIn()">Login</button>
-<button (click)="signOut()">Logout</button>
+<div class="container">
+  <div class="login">
+    <div class="main-name">
+      <div class="name">Attention Detection Testing.</div>
+      <div class="sub-name">Major Project</div>
+    </div>
+    <!-- <button (click)="signIn()">Login</button> -->
+    <div class="c">
+      <div class="google-btn" (click)="signIn()">
+        <div class="google-icon-wrapper">
+          <img
+            class="google-icon"
+            src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+          />
+        </div>
+        <p class="btn-text">Sign in with Google</p>
+      </div>
+    </div>
+    <!-- <button (click)="signOut()">Logout</button> -->
+  </div>
+</div>
+
+<!-- <p>login works!</p>
+<h2>{{ currUser?.displayName }}</h2> -->
