@@ -28,6 +28,24 @@ canvas {
   width: 150;
 }
 
+.btn {
+  font-family: "Montserrat", sans-serif;
+  cursor: pointer;
+  background-color: #ff6700;
+  color: #fffabd;
+  padding: 6px;
+  font-size: 20px;
+  border-radius: 5px;
+  font-weight: 500;
+  border: 2px solid #ff6700;
+  transition: background-color 300ms ease-in, color 300ms;
+}
+
+.btn:hover {
+  background-color: #fffabd;
+  color: #ff6700;
+}
+
 .room {
   display: grid;
   height: 100vh;

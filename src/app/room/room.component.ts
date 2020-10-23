@@ -26,6 +26,7 @@ export class RoomComponent implements OnInit {
   ) {}
 
   private intervalID: NodeJS.Timeout;
+  private tabIntervalID: NodeJS.Timeout;
   private roomId: string;
   private currUser: any;
   private mediaoptions = { audio: false, video: true };
@@ -34,11 +35,22 @@ export class RoomComponent implements OnInit {
   delay = 1000;
   model: tf.LayersModel;
   predictions: Array<number>;
+
+  outputCount: number = 0;
+  outputs: Array<any> = [];
   predMap = {
     0: 'attentive',
     1: 'highly_attentive',
     2: 'least_attentive',
     3: 'less_attentive',
+    4: 'not_attentive',
+  };
+  middleMap = { 0: 1, 1: 0, 2: 3, 3: 2, 4: 4 };
+  finalMap = {
+    1: 'attentive',
+    0: 'highly_attentive',
+    3: 'least_attentive',
+    2: 'less_attentive',
     4: 'not_attentive',
   };
   output: Array<any>[2] = [0, 0];
@@ -119,17 +131,33 @@ export class RoomComponent implements OnInit {
       // console.log(displaySize)
 
       this.intervalID = setInterval(async () => {
+        console.log(`Start of interval: ${this.outputCount}`);
+
+        if (this.outputCount >= 30) {
+          console.log(this.outputs);
+          this.evaluateAndSendData();
+          this.outputCount = 0;
+          this.outputs.length = 0;
+        }
+        console.log('FOCUS:', document.hasFocus());
+
         const detections = await faceapi.detectSingleFace(
           this.video.nativeElement,
           new faceapi.TinyFaceDetectorOptions()
         );
-        console.log(this.video.nativeElement);
+        // console.log(this.video.nativeElement);
 
         // console.log((new faceapi.TinyFaceDetectorOptions()).scoreThreshold,(new faceapi.TinyFaceDetectorOptions()).inputSize)
 
         // console.log("Face: ",detections.length)
 
         if (detections == undefined) {
+          console.log(detections);
+          this.output[0] = 4;
+          this.output[1] = 1;
+          this.outputs.push([this.output[0], this.output[1]]);
+          this.outputCount++;
+
           if (absence_timer == null) {
             absence_timer = new Date().getSeconds();
           }
@@ -139,66 +167,73 @@ export class RoomComponent implements OnInit {
             // console.log("Absent: ",difference)
             this.status = 'Absent: ' + difference + 's';
           }
-          this.roomCollection.add({
-            type: 4,
-            prob: 1.0,
-            timestamp: Date.now(),
-          });
+          // this.roomCollection.add({
+          //   type: 4,
+          //   prob: 1.0,
+          //   timestamp: Date.now(),
+          // });
         } else {
-          absence_timer = null;
-          this.status = 'Present';
-          console.log(detections.box);
-          const box = detections.box;
-          this.c.nativeElement.height = box.height;
-          this.c.nativeElement.width = box.width;
-          const context = this.can.nativeElement.getContext('2d');
+          if (document.hasFocus()) {
+            absence_timer = null;
+            this.status = 'Present';
+            // console.log(detections.box);
+            const box = detections.box;
+            this.c.nativeElement.height = box.height;
+            this.c.nativeElement.width = box.width;
+            const context = this.can.nativeElement.getContext('2d');
 
-          const resizedDetections = faceapi.resizeResults(
-            detections,
-            displaySize
-          );
-          this.canvas.nativeElement
-            .getContext('2d')
-            .clearRect(
-              0,
-              0,
-              this.canvas.nativeElement.width,
-              this.canvas.nativeElement.height
+            const resizedDetections = faceapi.resizeResults(
+              detections,
+              displaySize
             );
-          faceapi.draw.drawDetections(
-            this.canvas.nativeElement,
-            resizedDetections
-          );
+            this.canvas.nativeElement
+              .getContext('2d')
+              .clearRect(
+                0,
+                0,
+                this.canvas.nativeElement.width,
+                this.canvas.nativeElement.height
+              );
+            // faceapi.draw.drawDetections(
+            //   this.canvas.nativeElement,
+            //   resizedDetections
+            // );
 
-          this.c.nativeElement
-            .getContext('2d')
-            .drawImage(
-              this.video.nativeElement,
-              box.x,
-              box.y,
-              box.width,
-              box.height,
-              0,
-              0,
-              box.width,
-              box.height
-            );
-          context.drawImage(this.c.nativeElement, 0, 0, 150, 150);
+            this.c.nativeElement
+              .getContext('2d')
+              .drawImage(
+                this.video.nativeElement,
+                box.x,
+                box.y,
+                box.width,
+                box.height,
+                0,
+                0,
+                box.width,
+                box.height
+              );
+            context.drawImage(this.c.nativeElement, 0, 0, 150, 150);
 
-          const imgData = context.getImageData(0, 0, 150, 150);
-          // const image = tf.browser
-          //   .fromPixels(imgData)
-          //   .mean(2)
-          //   .toFloat()
-          //   .expandDims(0)
-          //   .expandDims(-1);
-          // console.log(image);
-          this.predict(imgData);
-          this.roomCollection.add({
-            type: this.output[0],
-            prob: this.output[1],
-            timestamp: Date.now(),
-          });
+            const imgData = context.getImageData(0, 0, 150, 150);
+            // const image = tf.browser
+            //   .fromPixels(imgData)
+            //   .mean(2)
+            //   .toFloat()
+            //   .expandDims(0)
+            //   .expandDims(-1);
+            // console.log(image);
+            this.predict(imgData);
+            // this.roomCollection.add({
+            //   type: this.output[0],
+            //   prob: this.output[1],
+            //   timestamp: Date.now(),
+            // });
+          } else {
+            this.output[0] = 4;
+            this.output[1] = 1;
+            this.outputs.push([this.output[0], this.output[1]]);
+            this.outputCount++;
+          }
         }
         console.log('Delay- ', this.delay);
       }, this.delay);
@@ -227,7 +262,7 @@ export class RoomComponent implements OnInit {
         .toFloat()
         .expandDims(0)
         .expandDims(-1);
-      console.log(face);
+      // console.log(face);
       const output = this.model.predict(face) as any;
       this.predictions = Array.from(output.dataSync());
       console.log('Pred: ', this.predictions);
@@ -246,9 +281,32 @@ export class RoomComponent implements OnInit {
           max = this.predictions[i];
         }
       }
-      this.output[0] = index;
+      this.output[0] = this.middleMap[index];
       this.output[1] = this.predictions[index];
+      this.outputs.push([this.output[0], this.output[1]]);
+      this.outputCount++;
       console.log(this.output);
     }
+  }
+
+  evaluateAndSendData() {
+    let currType, currProb: number;
+    this.outputs.forEach((val, i) => {
+      console.log(val);
+      if (i == 0) {
+        currType = val[0];
+        currProb = val[1];
+      } else {
+        currType = Math.min(Math.floor((currType + val[0]) / 2), 4);
+        if (currProb >= val[1]) (currProb * 1.75 + val[1] * 0.25) / 2;
+        else (currProb * 0.25 + val[1] * 1.75) / 2;
+      }
+    });
+    console.log(currType, currProb);
+    this.roomCollection.add({
+      type: currType,
+      prob: currProb,
+      timestamp: Date.now(),
+    });
   }
 }

@@ -44,8 +44,8 @@
   </div>
 
   <div class="video" *ngIf="(currPart | async)?.type != 'host'">
-    <button id="btnStartVideo" (click)="startVideo()">Start Video</button>
-    <button id="btnSnap" (click)="stopVideo()">Stop Video</button>
+    <button class="btn" (click)="startVideo()">Start Video</button>
+    <button class="btn" (click)="stopVideo()">Stop Video</button>
     <div class="video-container">
       <video #video width="400" height="300" autoplay muted></video>
       <canvas #canvas></canvas>
@@ -54,6 +54,6 @@
       <canvas #c id="c"></canvas>
       <canvas #can id="can"></canvas>
     </div>
-    <p>{{ predMap[output[0]] }} {{ output[1] }}</p>
+    <!-- <p>{{ output[0] }} {{ finalMap[output[0]] }} {{ output[1] }}</p> -->
   </div>
 </div>
